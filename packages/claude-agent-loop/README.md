@@ -1,6 +1,6 @@
 # Claude Agent Loop
 
-A standalone package that provides the core agentic conversation loops for the Claude Agent SDK. This package extracts the message queue and streaming session management from [Claude Agent Desktop](https://github.com/jasonkneen/claudesky).
+A standalone package that provides the core agentic conversation loops for the Claude Agent SDK. This package extracts the message queue and streaming session management from [ObsidianX Agent](https://github.com/sahilshingate01/ObsidianX).
 
 ## Overview
 
@@ -330,6 +330,10 @@ for await (const sdkMessage of querySession) {
 ```
 
 This loop processes everything the agent sends back, parsing different message types and emitting appropriate events.
+
+## Author
+
+**Sahil Shingate**
 
 ## License
 

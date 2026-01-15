@@ -34,9 +34,10 @@
     "oauth2"
   ],
   "license": "MIT",
+  "author": "Sahil Shingate",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jasonkneen/claudesky.git",
+    "url": "https://github.com/sahilshingate01/ObsidianX.git",
     "directory": "packages/anthropic-oauth"
   }
 }

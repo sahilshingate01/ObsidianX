@@ -213,7 +213,9 @@ export interface ElectronAPI {
     onContentBlockStop: (callback: (data: ContentBlockStop, paneId?: string) => void) => () => void;
     onToolResultStart: (callback: (data: ToolResultStart, paneId?: string) => void) => () => void;
     onToolResultDelta: (callback: (data: ToolResultDelta) => void) => () => void;
-    onToolResultComplete: (callback: (data: ToolResultComplete, paneId?: string) => void) => () => void;
+    onToolResultComplete: (
+      callback: (data: ToolResultComplete, paneId?: string) => void
+    ) => () => void;
     onSessionUpdated: (
       callback: (data: { sessionId: string; resumed: boolean }) => void
     ) => () => void;
@@ -227,18 +229,34 @@ export interface ElectronAPI {
     getEnvVars: () => Promise<EnvVarsResponse>;
     getDiagnosticMetadata: () => Promise<DiagnosticMetadataResponse>;
     getApiKeyStatus: () => Promise<{
-      status: { configured: boolean; source: 'env' | 'local' | null; lastFour: string | null };
+      status: {
+        configured: boolean;
+        source: 'env' | 'local' | null;
+        lastFour: string | null;
+      };
     }>;
     setApiKey: (apiKey?: string | null) => Promise<{
       success: boolean;
-      status: { configured: boolean; source: 'env' | 'local' | null; lastFour: string | null };
+      status: {
+        configured: boolean;
+        source: 'env' | 'local' | null;
+        lastFour: string | null;
+      };
     }>;
     getBaseUrlStatus: () => Promise<{
-      status: { configured: boolean; source: 'env' | 'local' | null; url: string | null };
+      status: {
+        configured: boolean;
+        source: 'env' | 'local' | null;
+        url: string | null;
+      };
     }>;
     setBaseUrl: (baseUrl?: string | null) => Promise<{
       success: boolean;
-      status: { configured: boolean; source: 'env' | 'local' | null; url: string | null };
+      status: {
+        configured: boolean;
+        source: 'env' | 'local' | null;
+        url: string | null;
+      };
     }>;
     getMcpServers: () => Promise<GetMcpServersResponse>;
     setMcpServers: (mcpServers: McpServersConfig) => Promise<SetMcpServersResponse>;
@@ -334,10 +352,7 @@ export interface ElectronAPI {
   };
   splits: {
     load: (windowId: string) => Promise<{ success: boolean; tree: unknown | null; error?: string }>;
-    save: (
-      windowId: string,
-      tree: unknown
-    ) => Promise<{ success: boolean; error?: string }>;
+    save: (windowId: string, tree: unknown) => Promise<{ success: boolean; error?: string }>;
     delete: (windowId: string) => Promise<{ success: boolean; error?: string }>;
   };
 }

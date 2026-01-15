@@ -93,7 +93,10 @@ export default function WorkerIndicator() {
       // Initialize stream content for new workers
       data.workers.forEach((w) => {
         if (w.streamContent && !streamContents[w.id]) {
-          setStreamContents((prev) => ({ ...prev, [w.id]: w.streamContent || '' }));
+          setStreamContents((prev) => ({
+            ...prev,
+            [w.id]: w.streamContent || ''
+          }));
         }
       });
     });

@@ -3,7 +3,7 @@
  *
  * A standalone package that provides the core agentic conversation loops
  * for the Claude Agent SDK. This package extracts the message queue and
- * streaming session management from Claude Agent Desktop.
+ * streaming session management from ObsidianX Agent.
  *
  * ## Core Concepts
  *

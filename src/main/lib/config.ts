@@ -162,12 +162,20 @@ export function getApiKeyStatus(): {
 } {
   const envApiKey = process.env.ANTHROPIC_API_KEY?.trim();
   if (envApiKey) {
-    return { configured: true, source: 'env', lastFour: getApiKeyLastFour(envApiKey) };
+    return {
+      configured: true,
+      source: 'env',
+      lastFour: getApiKeyLastFour(envApiKey)
+    };
   }
 
   const storedApiKey = loadConfig().apiKey?.trim();
   if (storedApiKey) {
-    return { configured: true, source: 'local', lastFour: getApiKeyLastFour(storedApiKey) };
+    return {
+      configured: true,
+      source: 'local',
+      lastFour: getApiKeyLastFour(storedApiKey)
+    };
   }
 
   return { configured: false, source: null, lastFour: null };
@@ -201,7 +209,9 @@ export function setChatModelPreferenceSetting(preference: ChatModelPreference): 
 export function getThinkingModeSetting(): ThinkingMode {
   const config = loadConfig();
   const mode = (config.thinkingMode ?? 'off') as ThinkingMode;
-  console.log(`[Config] getThinkingModeSetting() returning: ${mode} (from config: ${config.thinkingMode})`);
+  console.log(
+    `[Config] getThinkingModeSetting() returning: ${mode} (from config: ${config.thinkingMode})`
+  );
   return mode;
 }
 

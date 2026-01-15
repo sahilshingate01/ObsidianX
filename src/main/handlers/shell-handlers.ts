@@ -8,7 +8,10 @@ export function registerShellHandlers(): void {
       return { success: true };
     } catch (error) {
       console.error('Failed to open external URL:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   });
 }

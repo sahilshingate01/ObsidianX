@@ -35,9 +35,13 @@ export default function ProjectPicker() {
   }, []);
 
   const handleOpenProject = async (projectPath: string) => {
+    console.log('[ProjectPicker] ========== OPENING PROJECT ==========');
+    console.log('[ProjectPicker] handleOpenProject called with:', projectPath);
     setOpeningProject(projectPath);
     try {
+      console.log('[ProjectPicker] Calling window.electron.project.open...');
       await window.electron.project.open(projectPath);
+      console.log('[ProjectPicker] project.open completed');
     } catch (error) {
       console.error('Failed to open project:', error);
     } finally {
@@ -112,7 +116,7 @@ export default function ProjectPicker() {
         {/* Welcome Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">
-            Welcome to Claudesky
+            Welcome to ObsidianX Agent
           </h1>
           <p className="mt-2 text-neutral-500 dark:text-neutral-400">
             Open a project to get started

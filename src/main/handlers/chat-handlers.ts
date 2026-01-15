@@ -15,6 +15,7 @@ import type {
 } from '../../shared/types/ipc';
 import {
   getCurrentModelPreference,
+  getCurrentSessionCwd,
   getCurrentThinkingMode,
   interruptCurrentResponse,
   isSessionActive,
@@ -44,6 +45,15 @@ export function registerChatHandlers(getMainWindow: () => BrowserWindow | null):
     // Store per-window cwd if provided
     if (payload.cwd && sourceWindow) {
       setWindowCwd(sourceWindow.id, payload.cwd);
+
+      // Check if cwd changed from current session - if so, reset to start fresh
+      const currentCwd = getCurrentSessionCwd();
+      if (currentCwd && currentCwd !== payload.cwd && isSessionActive()) {
+        console.log(
+          `[chat-handlers] CWD changed from "${currentCwd}" to "${payload.cwd}" - resetting session`
+        );
+        await resetSession();
+      }
     }
     // Check for API key or OAuth token
     const apiKey = getApiKey();
@@ -64,7 +74,10 @@ export function registerChatHandlers(getMainWindow: () => BrowserWindow | null):
     const attachments = normalizedPayload.attachments ?? [];
 
     if (!text && attachments.length === 0) {
-      return { success: false, error: 'Please enter a message or attach a file before sending.' };
+      return {
+        success: false,
+        error: 'Please enter a message or attach a file before sending.'
+      };
     }
 
     try {
@@ -151,7 +164,11 @@ export function registerChatHandlers(getMainWindow: () => BrowserWindow | null):
     } catch (error) {
       console.error('Error updating model preference:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      return { success: false, error: errorMessage, preference: getCurrentModelPreference() };
+      return {
+        success: false,
+        error: errorMessage,
+        preference: getCurrentModelPreference()
+      };
     }
   });
 
@@ -165,7 +182,11 @@ export function registerChatHandlers(getMainWindow: () => BrowserWindow | null):
     const VALID_MODES = ['off', 'low', 'medium', 'high', 'ultra'] as const;
 
     if (typeof mode !== 'string' || !VALID_MODES.includes(mode as (typeof VALID_MODES)[number])) {
-      return { success: false, error: 'Invalid thinking mode', mode: getCurrentThinkingMode() };
+      return {
+        success: false,
+        error: 'Invalid thinking mode',
+        mode: getCurrentThinkingMode()
+      };
     }
 
     try {
@@ -174,7 +195,11 @@ export function registerChatHandlers(getMainWindow: () => BrowserWindow | null):
     } catch (error) {
       console.error('Error updating thinking mode:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      return { success: false, error: errorMessage, mode: getCurrentThinkingMode() };
+      return {
+        success: false,
+        error: errorMessage,
+        mode: getCurrentThinkingMode()
+      };
     }
   });
 

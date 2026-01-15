@@ -40,7 +40,9 @@ export default function VoiceSettings() {
           <select
             value={settings.provider}
             onChange={(e) =>
-              updateSettings({ provider: e.target.value as 'gemini' | 'openai' | 'local' })
+              updateSettings({
+                provider: e.target.value as 'gemini' | 'openai' | 'local'
+              })
             }
             className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900/60 dark:text-neutral-100 dark:focus:border-neutral-300"
           >

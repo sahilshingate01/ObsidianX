@@ -118,9 +118,13 @@ interface ChatProps {
   onOpenSettings?: () => void;
   isVisible?: boolean;
   paneId?: string;
+  /** Project path for this chat - passed from split pane content */
+  projectPath?: string;
 }
 
-export default function Chat({ onOpenSettings, isVisible = true, paneId }: ChatProps) {
+export default function Chat({ onOpenSettings, isVisible = true, paneId, projectPath }: ChatProps) {
+  console.log('[Chat] projectPath prop:', projectPath);
+  console.log('[Chat] URL fallback:', window.electron.project.getFromUrl());
   const [inputValue, setInputValue] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
@@ -129,13 +133,24 @@ export default function Chat({ onOpenSettings, isVisible = true, paneId }: ChatP
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [workspaceDir, setWorkspaceDir] = useState<string | null>(null);
-  // Per-tab project path (cwd) - set once when tab opens
-  const [projectCwd] = useState<string | null>(() => window.electron.project.getFromUrl());
+  // Per-pane project path (cwd) - prefer explicit prop, fallback to URL for backwards compatibility
+  const [projectCwd] = useState<string | null>(() => {
+    const resolved = projectPath ?? window.electron.project.getFromUrl();
+    console.log('[Chat] projectCwd resolved to:', resolved);
+    return resolved;
+  });
   const [mentions, setMentions] = useState<Mention[]>([]);
   const [modelPreference, setModelPreference] = useState<ChatModelPreference>('fast');
   const [isModelPreferenceUpdating, setIsModelPreferenceUpdating] = useState(false);
   const [queuedMessages, setQueuedMessages] = useState<QueuedMessage[]>([]);
-  const { messages, setMessages, isLoading, setIsLoading, isThinking, paneId: chatPaneId } = useClaudeChat(paneId);
+  const {
+    messages,
+    setMessages,
+    isLoading,
+    setIsLoading,
+    isThinking,
+    paneId: chatPaneId
+  } = useClaudeChat(paneId);
   const messagesContainerRef = useAutoScroll(isLoading, messages);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoadRef = useRef(true);
@@ -229,7 +244,7 @@ export default function Chat({ onOpenSettings, isVisible = true, paneId }: ChatP
           const workspaceLabel = workspaceDir ?? WORKSPACE_FALLBACK_LABEL;
           rejectionMessage =
             `"${file.name}" is larger than ${MAX_ATTACHMENT_SIZE_MB} MB. ` +
-            `Please drop it directly into the Claude Agent workspace at ${workspaceLabel}.`;
+            `Please drop it directly into the ObsidianX Agent workspace at ${workspaceLabel}.`;
           continue;
         }
 

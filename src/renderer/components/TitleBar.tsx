@@ -7,7 +7,12 @@ interface TitleBarProps {
   projectName?: string;
 }
 
-export default function TitleBar({ onOpenHistory, onNewChat, onOpenSettings, projectName }: TitleBarProps) {
+export default function TitleBar({
+  onOpenHistory,
+  onNewChat,
+  onOpenSettings,
+  projectName
+}: TitleBarProps) {
   // Detect Windows platform
   const isWindows = navigator.platform.toLowerCase().includes('win');
 
@@ -47,9 +52,9 @@ export default function TitleBar({ onOpenHistory, onNewChat, onOpenSettings, pro
           </div>
         )}
 
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex flex-1 items-center justify-center">
           {projectName && (
-            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 truncate max-w-xs">
+            <span className="max-w-xs truncate text-xs font-medium text-neutral-500 dark:text-neutral-400">
               {projectName}
             </span>
           )}

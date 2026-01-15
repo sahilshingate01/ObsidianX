@@ -2,6 +2,7 @@
   "name": "claude-agent-loop",
   "version": "1.0.0",
   "description": "Extracted agentic conversation loops for the Claude Agent SDK - message queue and streaming session management",
+  "author": "Sahil Shingate",
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",

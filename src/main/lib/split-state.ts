@@ -2,12 +2,12 @@
  * Split State Persistence
  *
  * Manages saving and loading split tree state for windows.
- * Storage: ~/Library/Application Support/Claudesky/window-splits.json
+ * Storage: ~/Library/Application Support/ObsidianX Agent/window-splits.json
  */
 
-import { app } from 'electron';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { app } from 'electron';
 
 import type { PersistedWindowState, SplitTree } from '../../shared/types/splits';
 import { deserializeSplitTree, serializeSplitTree } from '../../shared/utils/split-utils';

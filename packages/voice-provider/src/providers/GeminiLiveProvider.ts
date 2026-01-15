@@ -224,7 +224,7 @@ export class GeminiLiveProvider implements IVoiceProvider {
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: this.apiKey });
 
-      const systemInstruction = `You are an expert software engineer assistant integrated into Claude Agent Desktop. You have deep knowledge of:
+      const systemInstruction = `You are an expert software engineer assistant integrated into ObsidianX Agent. You have deep knowledge of:
 - JavaScript, TypeScript, Python, Bash, SQL, and other programming languages
 - React, Node.js, Electron, Web APIs, and modern development frameworks
 - Software architecture, design patterns, debugging, and best practices
@@ -237,7 +237,9 @@ You are helping a developer through voice interface. Respond concisely but compr
       );
       console.log('[VoiceProvider] Config:', {
         responseModalities: ['AUDIO'],
-        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
+        speechConfig: {
+          voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
+        },
         systemInstructionLength: systemInstruction.length
       });
 
@@ -335,7 +337,9 @@ You are helping a developer through voice interface. Respond concisely but compr
     try {
       const audioConstraints: MediaStreamConstraints['audio'] =
         this.deviceId ? { deviceId: { exact: this.deviceId } } : true;
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: audioConstraints
+      });
       this.mediaStream = stream;
 
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
@@ -538,7 +542,11 @@ You are helping a developer through voice interface. Respond concisely but compr
   }
 
   private async handleToolCalls(
-    functionCalls: Array<{ id: string; name: string; args: Record<string, any> }>
+    functionCalls: Array<{
+      id: string;
+      name: string;
+      args: Record<string, any>;
+    }>
   ): Promise<void> {
     for (const call of functionCalls) {
       const { id, name, args } = call;
@@ -737,7 +745,11 @@ You are helping a developer through voice interface. Respond concisely but compr
       return 'Error: Must provide either file_paths or code_snippet';
     }
     try {
-      const result = await electronApi.chat.codeReview({ filePaths, codeSnippet, focusAreas });
+      const result = await electronApi.chat.codeReview({
+        filePaths,
+        codeSnippet,
+        focusAreas
+      });
       if (result?.success) {
         return (
           result.response || 'Code review request queued. The review will appear in the main chat.'
@@ -751,13 +763,19 @@ You are helping a developer through voice interface. Respond concisely but compr
   }
 
   private async toolSuggestCodeFixes(filePath: string, issueDescription: string): Promise<string> {
-    console.log('[VoiceProvider] suggest_code_fixes:', { filePath, issueDescription });
+    console.log('[VoiceProvider] suggest_code_fixes:', {
+      filePath,
+      issueDescription
+    });
     const electronApi = (window as any).electron;
     if (!electronApi?.chat?.suggestCodeFixes) {
       return 'Code fix suggestions not available in this context.';
     }
     try {
-      const result = await electronApi.chat.suggestCodeFixes({ filePath, issueDescription });
+      const result = await electronApi.chat.suggestCodeFixes({
+        filePath,
+        issueDescription
+      });
       if (result?.success) {
         return (
           result.response || 'Code fix request queued. Suggestions will appear in the main chat.'

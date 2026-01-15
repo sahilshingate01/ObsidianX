@@ -121,7 +121,9 @@ export function updateConversation(
     ...(title !== undefined && { title }),
     ...(messages !== undefined && { messages }),
     ...(sessionId !== undefined && { sessionId }),
-    ...((messagesChanged || titleChanged || sessionIdChanged) && { updatedAt: now })
+    ...((messagesChanged || titleChanged || sessionIdChanged) && {
+      updatedAt: now
+    })
   };
 
   writeConversationFile(updated);
@@ -160,8 +162,13 @@ export function listConversations(limit: number = 100): Conversation[] {
       }
     })
     .filter(
-      (item): item is { id: string; updatedAt: number; conversationFile: ConversationFile } =>
-        item !== null
+      (
+        item
+      ): item is {
+        id: string;
+        updatedAt: number;
+        conversationFile: ConversationFile;
+      } => item !== null
     )
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, limit);

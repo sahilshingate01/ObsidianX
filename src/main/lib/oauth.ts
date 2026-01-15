@@ -44,7 +44,10 @@ export async function completeOAuthLogin(
 
   // Double-check parameters before calling client
   if (!state || typeof state !== 'string' || state.length === 0) {
-    console.error('[oauth.ts] Invalid state parameter:', { state, type: typeof state });
+    console.error('[oauth.ts] Invalid state parameter:', {
+      state,
+      type: typeof state
+    });
     throw new Error('State parameter is missing or invalid');
   }
 

@@ -82,7 +82,11 @@ const ChatApp: React.FC<{ apiKey?: string; oauthToken?: string }> = ({ apiKey, o
                     ...prev,
                     messages: [
                       ...prev.messages,
-                      { role: 'assistant', content: text, timestamp: new Date() }
+                      {
+                        role: 'assistant',
+                        content: text,
+                        timestamp: new Date()
+                      }
                     ]
                   };
                 }
@@ -90,10 +94,17 @@ const ChatApp: React.FC<{ apiKey?: string; oauthToken?: string }> = ({ apiKey, o
             },
 
             onThinkingStart: () => {
-              setState((prev) => ({ ...prev, showThinking: true, thinkingContent: '' }));
+              setState((prev) => ({
+                ...prev,
+                showThinking: true,
+                thinkingContent: ''
+              }));
             },
             onThinkingChunk: (data: { delta: string }) => {
-              setState((prev) => ({ ...prev, thinkingContent: prev.thinkingContent + data.delta }));
+              setState((prev) => ({
+                ...prev,
+                thinkingContent: prev.thinkingContent + data.delta
+              }));
             },
 
             onToolUseStart: (tool: { name: string }) => {
@@ -134,7 +145,11 @@ const ChatApp: React.FC<{ apiKey?: string; oauthToken?: string }> = ({ apiKey, o
                 showThinking: false,
                 messages: [
                   ...prev.messages,
-                  { role: 'system', content: '⏹️  Response stopped', timestamp: new Date() }
+                  {
+                    role: 'system',
+                    content: '⏹️  Response stopped',
+                    timestamp: new Date()
+                  }
                 ]
               }));
               setInputMode('chat');
@@ -146,7 +161,11 @@ const ChatApp: React.FC<{ apiKey?: string; oauthToken?: string }> = ({ apiKey, o
                 showThinking: false,
                 messages: [
                   ...prev.messages,
-                  { role: 'system', content: `❌ Error: ${error}`, timestamp: new Date() }
+                  {
+                    role: 'system',
+                    content: `❌ Error: ${error}`,
+                    timestamp: new Date()
+                  }
                 ]
               }));
               setInputMode('chat');
@@ -228,7 +247,11 @@ const ChatApp: React.FC<{ apiKey?: string; oauthToken?: string }> = ({ apiKey, o
             ...prev,
             messages: [
               ...prev.messages,
-              { role: 'system', content: 'ℹ️  No response in progress', timestamp: new Date() }
+              {
+                role: 'system',
+                content: 'ℹ️  No response in progress',
+                timestamp: new Date()
+              }
             ]
           }));
         }
@@ -252,7 +275,11 @@ const ChatApp: React.FC<{ apiKey?: string; oauthToken?: string }> = ({ apiKey, o
               currentModel: model,
               messages: [
                 ...prev.messages,
-                { role: 'system', content: `✅ Switched to ${model}`, timestamp: new Date() }
+                {
+                  role: 'system',
+                  content: `✅ Switched to ${model}`,
+                  timestamp: new Date()
+                }
               ]
             }));
           } catch (e) {
@@ -295,7 +322,11 @@ const ChatApp: React.FC<{ apiKey?: string; oauthToken?: string }> = ({ apiKey, o
           isResponding: false,
           messages: [
             ...prev.messages,
-            { role: 'system', content: `❌ Error: ${error}`, timestamp: new Date() }
+            {
+              role: 'system',
+              content: `❌ Error: ${error}`,
+              timestamp: new Date()
+            }
           ]
         }));
         setInputMode('chat');

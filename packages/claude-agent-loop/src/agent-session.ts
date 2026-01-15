@@ -354,7 +354,12 @@ async function runStreamingLoop(
  * Handle streaming events (real-time deltas).
  */
 function handleStreamEvent(
-  streamEvent: { type: string; index?: number; delta?: unknown; content_block?: unknown },
+  streamEvent: {
+    type: string;
+    index?: number;
+    delta?: unknown;
+    content_block?: unknown;
+  },
   events: AgentSessionEvents
 ): void {
   if (streamEvent.type === 'content_block_delta') {

@@ -1,7 +1,8 @@
 {
   "name": "@voice-provider/core",
   "version": "1.0.0",
-  "description": "Voice input/output provider for Claude Agent Desktop",
+  "description": "Voice input/output provider for ObsidianX Agent",
+  "author": "Sahil Shingate",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

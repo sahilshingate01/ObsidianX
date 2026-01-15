@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import type { UpdateStatus } from '../electron';
 
-const RELEASES_URL = 'https://github.com/jasonkneen/claudesky/releases';
+const RELEASES_URL = 'https://github.com/sahilshingate01/ObsidianX/releases';
 
 export default function UpdateNotification() {
   const [status, setStatus] = useState<UpdateStatus | null>(null);

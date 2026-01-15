@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
@@ -11,7 +12,7 @@ import ts from 'typescript-eslint';
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default defineConfig(
-  includeIgnoreFile(gitignorePath),
+  ...(existsSync(gitignorePath) ? [includeIgnoreFile(gitignorePath)] : []),
   {
     // Additional ignore patterns for Electron build output
     ignores: ['**/out/**', '**/dist/**', '**/.vite/**', '**/coverage/**', '**/.eslintcache']

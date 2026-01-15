@@ -13,7 +13,10 @@ describe('parsePartialJson', () => {
     test('parses nested object', () => {
       const input = '{"user": {"name": "Alice", "age": 30}, "active": true}';
       const result = parsePartialJson(input);
-      expect(result).toEqual({ user: { name: 'Alice', age: 30 }, active: true });
+      expect(result).toEqual({
+        user: { name: 'Alice', age: 30 },
+        active: true
+      });
     });
 
     test('parses array', () => {
@@ -208,7 +211,11 @@ describe('parsePartialJson', () => {
       }>(input);
       expect(result).toEqual({
         todos: [
-          { content: 'Run tests', status: 'completed', activeForm: 'Running tests' },
+          {
+            content: 'Run tests',
+            status: 'completed',
+            activeForm: 'Running tests'
+          },
           { content: 'Fix bugs', status: 'in_progress' }
         ]
       });
@@ -312,7 +319,10 @@ describe('parsePartialJson', () => {
 
       for (const chunk of chunks) {
         accumulated += chunk;
-        const parsed = parsePartialJson<{ file_path?: string; content?: string }>(accumulated);
+        const parsed = parsePartialJson<{
+          file_path?: string;
+          content?: string;
+        }>(accumulated);
         results.push(parsed);
       }
 

@@ -8,16 +8,14 @@
 import { useState } from 'react';
 
 import type { SplitLeafNode } from '../../../shared/types/splits';
-import Settings from '../../pages/Settings';
 import { useSplitContext } from '../../contexts/SplitContext';
-
 // Lazy load page components
 import Browser from '../../pages/Browser';
 import Chat from '../../pages/Chat';
 import Kanban from '../../pages/Kanban';
 import Notes from '../../pages/Notes';
+import Settings from '../../pages/Settings';
 import Todos from '../../pages/Todos';
-
 import PanePicker from './PanePicker';
 
 interface PaneRendererProps {
@@ -69,8 +67,19 @@ export default function PaneRenderer({ pane }: PaneRendererProps) {
           )}
 
           {/* Chat with paneId for session isolation - relative container for absolute ChatInput */}
-          <div className={`pane-content relative h-full w-full overflow-hidden ${showSettings ? 'hidden' : 'block'}`}>
-            <Chat key={pane.id} paneId={pane.id} onOpenSettings={openSettings} />
+          <div
+            className={`pane-content relative h-full w-full overflow-hidden ${showSettings ? 'hidden' : 'block'}`}
+          >
+            {(() => {
+              console.log('[PaneRenderer] pane.content.projectPath:', pane.content.projectPath);
+              return null;
+            })()}
+            <Chat
+              key={pane.id}
+              paneId={pane.id}
+              projectPath={pane.content.projectPath}
+              onOpenSettings={openSettings}
+            />
           </div>
         </>
       );
@@ -105,7 +114,9 @@ export default function PaneRenderer({ pane }: PaneRendererProps) {
           )}
 
           {/* Main content */}
-          <div className={`pane-content relative h-full w-full overflow-hidden ${showSettings ? 'hidden' : 'block'}`}>
+          <div
+            className={`pane-content relative h-full w-full overflow-hidden ${showSettings ? 'hidden' : 'block'}`}
+          >
             <ContentComponent key={pane.id} onOpenSettings={openSettings} />
           </div>
         </>
@@ -126,7 +137,7 @@ export default function PaneRenderer({ pane }: PaneRendererProps) {
       {!isOnlyPane && (
         <button
           onClick={handleClose}
-          className="absolute right-1.5 top-1.5 z-50 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-400/80 text-[10px] font-bold leading-none text-white opacity-0 transition-all hover:bg-red-500 group-hover:opacity-100 dark:bg-neutral-600/80"
+          className="absolute top-1.5 right-1.5 z-50 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-400/80 text-[10px] leading-none font-bold text-white opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500 dark:bg-neutral-600/80"
         >
           ×
         </button>

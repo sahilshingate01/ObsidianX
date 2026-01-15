@@ -6,7 +6,13 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load config
-const configPath = path.join(process.env.HOME, 'Library/Application Support/claudesky/config.json');
+const configPath =
+  [
+    path.join(process.env.HOME, 'Library/Application Support/ObsidianX Agent/config.json'),
+    path.join(process.env.HOME, 'Library/Application Support/ObsidianX/config.json'),
+    path.join(process.env.HOME, 'Library/Application Support/claudesky/config.json')
+  ].find((p) => fs.existsSync(p)) ||
+  path.join(process.env.HOME, 'Library/Application Support/ObsidianX Agent/config.json');
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 const token = config.oauthTokens.access;
 

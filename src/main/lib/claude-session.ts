@@ -15,6 +15,7 @@ import {
   setChatModelPreferenceSetting,
   setThinkingModeSetting
 } from './config';
+import { getMergedMcpServers } from './mcp-server-discovery';
 import {
   abortGenerator,
   clearMessageQueue,
@@ -24,7 +25,6 @@ import {
   resetAbortFlag,
   setSessionId
 } from './message-queue';
-import { getMergedMcpServers } from './mcp-server-discovery';
 import { getStoredValidAccessToken } from './oauth';
 import { endSessionLog, logEvent, startSessionLog } from './session-logger';
 
@@ -64,7 +64,7 @@ function resolveClaudeCodeCli(): string {
 }
 
 /**
- * System prompt append for Claude Agent Desktop tooling preferences.
+ * System prompt append for ObsidianX Agent tooling preferences.
  */
 const SYSTEM_PROMPT_APPEND = `**Workspace Context:**
 This is a multi-purpose workspace for diverse projects, scripts, and workflows—not a single monolithic codebase. Each subdirectory may represent different applications or tasks. Always understand context before making assumptions about project structure.
@@ -88,6 +88,8 @@ let activeChatWindow: BrowserWindow | null = null;
 let activePaneId: string | null = null;
 // Per-window working directory tracking
 const windowCwdMap: Map<number, string> = new Map();
+// Track the cwd used by the current session - reset session if cwd changes
+let currentSessionCwd: string | null = null;
 
 function getModelIdForPreference(preference: ChatModelPreference = currentModelPreference): string {
   return MODEL_BY_PREFERENCE[preference] ?? FAST_MODEL_ID;
@@ -185,6 +187,10 @@ export function getWindowCwd(windowId: number): string | undefined {
   return windowCwdMap.get(windowId);
 }
 
+export function getCurrentSessionCwd(): string | null {
+  return currentSessionCwd;
+}
+
 export async function interruptCurrentResponse(mainWindow: BrowserWindow | null): Promise<boolean> {
   if (!querySession) {
     return false;
@@ -239,6 +245,7 @@ export async function resetSession(resumeSessionId?: string | null): Promise<voi
   querySession = null;
   isProcessing = false;
   sessionTerminationPromise = null;
+  currentSessionCwd = null;
 }
 
 // Start streaming session
@@ -367,7 +374,10 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
     const canUseTool = async (
       toolName: string,
       input: Record<string, unknown>
-    ): Promise<{ behavior: 'allow'; updatedInput: Record<string, unknown> } | { behavior: 'deny'; message: string }> => {
+    ): Promise<
+      | { behavior: 'allow'; updatedInput: Record<string, unknown> }
+      | { behavior: 'deny'; message: string }
+    > => {
       console.log(`🔐 Permission check for tool: ${toolName}`);
 
       // Check if this is an MCP tool (format: mcp__servername__toolname)
@@ -434,7 +444,14 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
           append: SYSTEM_PROMPT_APPEND
         },
         // Use per-window cwd if set, otherwise fall back to global workspace
-        cwd: (activeChatWindow && getWindowCwd(activeChatWindow.id)) || getWorkspaceDir(),
+        // Store it so we can detect when cwd changes and reset session
+        cwd: (() => {
+          const resolvedCwd =
+            (activeChatWindow && getWindowCwd(activeChatWindow.id)) || getWorkspaceDir();
+          currentSessionCwd = resolvedCwd;
+          console.log(`[Session] Session cwd set to: ${resolvedCwd}`);
+          return resolvedCwd;
+        })(),
         includePartialMessages: true,
         ...(isResumedSession && { resume: resumeSessionId! })
       }
@@ -458,18 +475,29 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
         if (streamEvent.type === 'content_block_delta') {
           if (streamEvent.delta.type === 'text_delta') {
             // Regular text delta
-            targetWindow.webContents.send('chat:message-chunk', streamEvent.delta.text, activePaneId);
+            targetWindow.webContents.send(
+              'chat:message-chunk',
+              streamEvent.delta.text,
+              activePaneId
+            );
             logEvent(currentSessionId, 'assistant_text_delta', {
               text: streamEvent.delta.text,
               index: streamEvent.index
             });
           } else if (streamEvent.delta.type === 'thinking_delta') {
             // Thinking text delta - send as thinking chunk
-            console.log(`🧠 Thinking delta received (index: ${streamEvent.index}):`, streamEvent.delta.thinking?.substring(0, 50) + '...');
-            targetWindow.webContents.send('chat:thinking-chunk', {
-              index: streamEvent.index,
-              delta: streamEvent.delta.thinking
-            }, activePaneId);
+            console.log(
+              `🧠 Thinking delta received (index: ${streamEvent.index}):`,
+              streamEvent.delta.thinking?.substring(0, 50) + '...'
+            );
+            targetWindow.webContents.send(
+              'chat:thinking-chunk',
+              {
+                index: streamEvent.index,
+                delta: streamEvent.delta.thinking
+              },
+              activePaneId
+            );
             logEvent(currentSessionId, 'thinking_delta', {
               thinking: streamEvent.delta.thinking,
               index: streamEvent.index
@@ -478,11 +506,15 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
             // Handle input JSON deltas for tool use
             // Look up the tool ID for this stream index
             const toolId = streamIndexToToolId.get(streamEvent.index);
-            targetWindow.webContents.send('chat:tool-input-delta', {
-              index: streamEvent.index,
-              toolId: toolId || '', // Send tool ID if available
-              delta: streamEvent.delta.partial_json
-            }, activePaneId);
+            targetWindow.webContents.send(
+              'chat:tool-input-delta',
+              {
+                index: streamEvent.index,
+                toolId: toolId || '', // Send tool ID if available
+                delta: streamEvent.delta.partial_json
+              },
+              activePaneId
+            );
             logEvent(currentSessionId, 'tool_input_delta', {
               toolId: toolId || '',
               index: streamEvent.index,
@@ -493,9 +525,13 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
           // Handle thinking blocks
           if (streamEvent.content_block.type === 'thinking') {
             console.log(`🧠 Thinking block started (index: ${streamEvent.index})`);
-            targetWindow.webContents.send('chat:thinking-start', {
-              index: streamEvent.index
-            }, activePaneId);
+            targetWindow.webContents.send(
+              'chat:thinking-start',
+              {
+                index: streamEvent.index
+              },
+              activePaneId
+            );
             logEvent(currentSessionId, 'thinking_start', {
               index: streamEvent.index
             });
@@ -503,12 +539,16 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
             // Store mapping of stream index to tool ID
             streamIndexToToolId.set(streamEvent.index, streamEvent.content_block.id);
 
-            targetWindow.webContents.send('chat:tool-use-start', {
-              id: streamEvent.content_block.id,
-              name: streamEvent.content_block.name,
-              input: streamEvent.content_block.input || {},
-              streamIndex: streamEvent.index
-            }, activePaneId);
+            targetWindow.webContents.send(
+              'chat:tool-use-start',
+              {
+                id: streamEvent.content_block.id,
+                name: streamEvent.content_block.name,
+                input: streamEvent.content_block.input || {},
+                streamIndex: streamEvent.index
+              },
+              activePaneId
+            );
             logEvent(currentSessionId, 'tool_use_start', {
               id: streamEvent.content_block.id,
               name: streamEvent.content_block.name,
@@ -539,11 +579,15 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
             }
 
             if (contentStr) {
-              targetWindow.webContents.send('chat:tool-result-start', {
-                toolUseId: toolResultBlock.tool_use_id,
-                content: contentStr,
-                isError: toolResultBlock.is_error || false
-              }, activePaneId);
+              targetWindow.webContents.send(
+                'chat:tool-result-start',
+                {
+                  toolUseId: toolResultBlock.tool_use_id,
+                  content: contentStr,
+                  isError: toolResultBlock.is_error || false
+                },
+                activePaneId
+              );
               logEvent(currentSessionId, 'tool_result_start', {
                 toolUseId: toolResultBlock.tool_use_id,
                 content: contentStr,
@@ -555,10 +599,14 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
           // Signal end of a content block
           // Look up tool ID for this stream index (if it's a tool block)
           const toolId = streamIndexToToolId.get(streamEvent.index);
-          targetWindow.webContents.send('chat:content-block-stop', {
-            index: streamEvent.index,
-            toolId: toolId || undefined
-          }, activePaneId);
+          targetWindow.webContents.send(
+            'chat:content-block-stop',
+            {
+              index: streamEvent.index,
+              toolId: toolId || undefined
+            },
+            activePaneId
+          );
           logEvent(currentSessionId, 'content_block_stop', {
             index: streamEvent.index,
             toolId: toolId || undefined
@@ -628,11 +676,15 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
               }
 
               // Send tool result - this will be displayed in the UI
-              targetWindow.webContents.send('chat:tool-result-complete', {
-                toolUseId: toolResultBlock.tool_use_id,
-                content: contentStr,
-                isError: toolResultBlock.is_error || false
-              }, activePaneId);
+              targetWindow.webContents.send(
+                'chat:tool-result-complete',
+                {
+                  toolUseId: toolResultBlock.tool_use_id,
+                  content: contentStr,
+                  isError: toolResultBlock.is_error || false
+                },
+                activePaneId
+              );
               logEvent(currentSessionId, 'tool_result_complete', {
                 toolUseId: toolResultBlock.tool_use_id,
                 content: contentStr,
@@ -672,7 +724,23 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
           console.log(`   Built-in tools: Bash, Read, Write, Edit, WebFetch, WebSearch, Skill`);
 
           // Extract MCP tools (tools not in the built-in list)
-          const builtInTools = ['Bash', 'Read', 'Write', 'Edit', 'MultiEdit', 'Glob', 'Grep', 'WebFetch', 'WebSearch', 'Skill', 'LSP', 'NotebookRead', 'NotebookEdit', 'TodoWrite', 'AskUserQuestion'];
+          const builtInTools = [
+            'Bash',
+            'Read',
+            'Write',
+            'Edit',
+            'MultiEdit',
+            'Glob',
+            'Grep',
+            'WebFetch',
+            'WebSearch',
+            'Skill',
+            'LSP',
+            'NotebookRead',
+            'NotebookEdit',
+            'TodoWrite',
+            'AskUserQuestion'
+          ];
           const mcpTools = toolsInSdk.filter((tool: string) => !builtInTools.includes(tool));
 
           if (mcpTools.length > 0) {
@@ -687,10 +755,14 @@ export async function startStreamingSession(mainWindow: BrowserWindow | null): P
           if (sessionIdFromSdk) {
             setSessionId(sessionIdFromSdk);
             if (targetWindow && !targetWindow.isDestroyed()) {
-              targetWindow.webContents.send('chat:session-updated', {
-                sessionId: sessionIdFromSdk,
-                resumed: isResumedSession
-              }, activePaneId);
+              targetWindow.webContents.send(
+                'chat:session-updated',
+                {
+                  sessionId: sessionIdFromSdk,
+                  resumed: isResumedSession
+                },
+                activePaneId
+              );
             }
             logEvent(currentSessionId, 'session_initialized', {
               sessionId: sessionIdFromSdk,

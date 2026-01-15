@@ -26,63 +26,65 @@ export function useClaudeChat(paneId?: string): {
     console.log(`[useClaudeChat] Pane ${stablePaneId} initialized`);
 
     // Listen for streaming message chunks
-    const unsubscribeMessageChunk = window.electron.chat.onMessageChunk((chunk: string, eventPaneId?: string) => {
-      // Filter: only process if event is for our pane (or no paneId = broadcast)
-      if (eventPaneId && eventPaneId !== stablePaneId) return;
+    const unsubscribeMessageChunk = window.electron.chat.onMessageChunk(
+      (chunk: string, eventPaneId?: string) => {
+        // Filter: only process if event is for our pane (or no paneId = broadcast)
+        if (eventPaneId && eventPaneId !== stablePaneId) return;
 
-      setMessages((prev) => {
-        const lastMessage = prev[prev.length - 1];
-        // Only append if last message is from assistant AND we're actively streaming
-        // This prevents appending to completed messages from previous turns
-        if (lastMessage && lastMessage.role === 'assistant' && isStreamingRef.current) {
-          const content = lastMessage.content;
-          if (typeof content === 'string') {
-            return [
-              ...prev.slice(0, -1),
-              {
-                ...lastMessage,
-                content: content + chunk
-              }
-            ];
-          } else {
-            // Content is structured - append to last text block or create new one
-            const lastBlock = content[content.length - 1];
-            if (lastBlock && lastBlock.type === 'text') {
+        setMessages((prev) => {
+          const lastMessage = prev[prev.length - 1];
+          // Only append if last message is from assistant AND we're actively streaming
+          // This prevents appending to completed messages from previous turns
+          if (lastMessage && lastMessage.role === 'assistant' && isStreamingRef.current) {
+            const content = lastMessage.content;
+            if (typeof content === 'string') {
               return [
                 ...prev.slice(0, -1),
                 {
                   ...lastMessage,
-                  content: [
-                    ...content.slice(0, -1),
-                    { type: 'text', text: (lastBlock.text || '') + chunk }
-                  ]
+                  content: content + chunk
                 }
               ];
             } else {
-              return [
-                ...prev.slice(0, -1),
-                {
-                  ...lastMessage,
-                  content: [...content, { type: 'text', text: chunk }]
-                }
-              ];
+              // Content is structured - append to last text block or create new one
+              const lastBlock = content[content.length - 1];
+              if (lastBlock && lastBlock.type === 'text') {
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...lastMessage,
+                    content: [
+                      ...content.slice(0, -1),
+                      { type: 'text', text: (lastBlock.text || '') + chunk }
+                    ]
+                  }
+                ];
+              } else {
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...lastMessage,
+                    content: [...content, { type: 'text', text: chunk }]
+                  }
+                ];
+              }
             }
           }
-        }
-        // Otherwise, create new assistant message and start streaming
-        isStreamingRef.current = true;
-        debugMessagesRef.current = []; // Clear debug accumulator for new response
-        return [
-          ...prev,
-          {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: chunk,
-            timestamp: new Date()
-          }
-        ];
-      });
-    });
+          // Otherwise, create new assistant message and start streaming
+          isStreamingRef.current = true;
+          debugMessagesRef.current = []; // Clear debug accumulator for new response
+          return [
+            ...prev,
+            {
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: chunk,
+              timestamp: new Date()
+            }
+          ];
+        });
+      }
+    );
 
     // Listen for thinking block start
     const unsubscribeThinkingStart = window.electron.chat.onThinkingStart(
@@ -174,46 +176,48 @@ export function useClaudeChat(paneId?: string): {
     );
 
     // Listen for tool use start
-    const unsubscribeToolUseStart = window.electron.chat.onToolUseStart((tool: ToolUse, eventPaneId?: string) => {
-      if (eventPaneId && eventPaneId !== stablePaneId) return;
-      setMessages((prev) => {
-        const lastMessage = prev[prev.length - 1];
-        const toolBlock = {
-          type: 'tool_use' as const,
-          tool: {
-            ...tool,
-            // Don't stringify tool.input here - it gets built up via deltas
-            inputJson: ''
-          }
-        };
+    const unsubscribeToolUseStart = window.electron.chat.onToolUseStart(
+      (tool: ToolUse, eventPaneId?: string) => {
+        if (eventPaneId && eventPaneId !== stablePaneId) return;
+        setMessages((prev) => {
+          const lastMessage = prev[prev.length - 1];
+          const toolBlock = {
+            type: 'tool_use' as const,
+            tool: {
+              ...tool,
+              // Don't stringify tool.input here - it gets built up via deltas
+              inputJson: ''
+            }
+          };
 
-        if (lastMessage && lastMessage.role === 'assistant') {
-          const content = lastMessage.content;
-          const contentArray =
-            typeof content === 'string' ? [{ type: 'text' as const, text: content }] : content;
+          if (lastMessage && lastMessage.role === 'assistant') {
+            const content = lastMessage.content;
+            const contentArray =
+              typeof content === 'string' ? [{ type: 'text' as const, text: content }] : content;
+            return [
+              ...prev.slice(0, -1),
+              {
+                ...lastMessage,
+                content: [...contentArray, toolBlock]
+              }
+            ];
+          }
+
+          // No existing assistant message – start a new one so the tool can render
+          isStreamingRef.current = true;
+          debugMessagesRef.current = []; // Clear debug accumulator for new response
           return [
-            ...prev.slice(0, -1),
+            ...prev,
             {
-              ...lastMessage,
-              content: [...contentArray, toolBlock]
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: [toolBlock],
+              timestamp: new Date()
             }
           ];
-        }
-
-        // No existing assistant message – start a new one so the tool can render
-        isStreamingRef.current = true;
-        debugMessagesRef.current = []; // Clear debug accumulator for new response
-        return [
-          ...prev,
-          {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: [toolBlock],
-            timestamp: new Date()
-          }
-        ];
-      });
-    });
+        });
+      }
+    );
 
     // Listen for tool input deltas - accumulate the raw string and attempt incremental parsing
     const unsubscribeToolInputDelta = window.electron.chat.onToolInputDelta(
@@ -493,200 +497,208 @@ export function useClaudeChat(paneId?: string): {
     );
 
     // Listen for message completion
-    const unsubscribeMessageComplete = window.electron.chat.onMessageComplete((eventPaneId?: string) => {
-      if (eventPaneId && eventPaneId !== stablePaneId) return;
-      isStreamingRef.current = false;
-      setIsLoading(false);
-      setIsThinking(false);
+    const unsubscribeMessageComplete = window.electron.chat.onMessageComplete(
+      (eventPaneId?: string) => {
+        if (eventPaneId && eventPaneId !== stablePaneId) return;
+        isStreamingRef.current = false;
+        setIsLoading(false);
+        setIsThinking(false);
 
-      // Append all accumulated debug messages when response completes
-      if (debugMessagesRef.current.length > 0) {
-        const accumulatedDebug = debugMessagesRef.current.join('\n');
-        debugMessagesRef.current = []; // Clear accumulator
+        // Append all accumulated debug messages when response completes
+        if (debugMessagesRef.current.length > 0) {
+          const accumulatedDebug = debugMessagesRef.current.join('\n');
+          debugMessagesRef.current = []; // Clear accumulator
 
-        setMessages((prev) => {
-          const lastMessage = prev[prev.length - 1];
-          const debugContent = `\n\n---\n**🔍 Debug Output:**\n\`\`\`\n${accumulatedDebug}\n\`\`\`\n`;
-
-          if (lastMessage && lastMessage.role === 'assistant') {
-            const content = lastMessage.content;
-            if (typeof content === 'string') {
-              // Append debug message to string content
-              return [
-                ...prev.slice(0, -1),
-                {
-                  ...lastMessage,
-                  content: content + debugContent
-                }
-              ];
-            } else {
-              // Content is structured - append debug block
-              return [
-                ...prev.slice(0, -1),
-                {
-                  ...lastMessage,
-                  content: [
-                    ...content,
-                    {
-                      type: 'text' as const,
-                      text: debugContent
-                    }
-                  ]
-                }
-              ];
-            }
-          }
-          // No existing assistant message - create new one for debug
-          return [
-            ...prev,
-            {
-              id: Date.now().toString(),
-              role: 'assistant',
-              content: debugContent.trim(),
-              timestamp: new Date()
-            }
-          ];
-        });
-      }
-    });
-
-    const unsubscribeMessageStopped = window.electron.chat.onMessageStopped((eventPaneId?: string) => {
-      if (eventPaneId && eventPaneId !== stablePaneId) return;
-      isStreamingRef.current = false;
-      setIsLoading(false);
-      setIsThinking(false);
-
-      // Get accumulated debug messages
-      const accumulatedDebug =
-        debugMessagesRef.current.length > 0 ? debugMessagesRef.current.join('\n') : null;
-      debugMessagesRef.current = []; // Clear accumulator
-
-      setMessages((prev) => {
-        const lastMessage = prev[prev.length - 1];
-        if (
-          lastMessage &&
-          lastMessage.role === 'assistant' &&
-          typeof lastMessage.content !== 'string'
-        ) {
-          let hasUpdates = false;
-          let updatedContent = lastMessage.content.map((block) => {
-            if (block.type === 'thinking' && !block.isComplete) {
-              hasUpdates = true;
-              return {
-                ...block,
-                isComplete: true,
-                thinkingDurationMs:
-                  block.thinkingStartedAt ? Date.now() - block.thinkingStartedAt : undefined
-              };
-            }
-            return block;
-          });
-
-          // Append debug messages if any were accumulated
-          if (accumulatedDebug) {
+          setMessages((prev) => {
+            const lastMessage = prev[prev.length - 1];
             const debugContent = `\n\n---\n**🔍 Debug Output:**\n\`\`\`\n${accumulatedDebug}\n\`\`\`\n`;
-            updatedContent = [
-              ...updatedContent,
-              {
-                type: 'text' as const,
-                text: debugContent
-              }
-            ];
-            hasUpdates = true;
-          }
 
-          if (hasUpdates) {
-            return [
-              ...prev.slice(0, -1),
-              {
-                ...lastMessage,
-                content: updatedContent
+            if (lastMessage && lastMessage.role === 'assistant') {
+              const content = lastMessage.content;
+              if (typeof content === 'string') {
+                // Append debug message to string content
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...lastMessage,
+                    content: content + debugContent
+                  }
+                ];
+              } else {
+                // Content is structured - append debug block
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...lastMessage,
+                    content: [
+                      ...content,
+                      {
+                        type: 'text' as const,
+                        text: debugContent
+                      }
+                    ]
+                  }
+                ];
               }
-            ];
-          }
-        } else if (accumulatedDebug) {
-          // No existing assistant message but we have debug messages
-          const debugContent = `\n\n---\n**🔍 Debug Output:**\n\`\`\`\n${accumulatedDebug}\n\`\`\`\n`;
-          return [
-            ...prev,
-            {
-              id: Date.now().toString(),
-              role: 'assistant',
-              content: debugContent.trim(),
-              timestamp: new Date()
             }
-          ];
+            // No existing assistant message - create new one for debug
+            return [
+              ...prev,
+              {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: debugContent.trim(),
+                timestamp: new Date()
+              }
+            ];
+          });
         }
-        return prev;
-      });
-    });
+      }
+    );
 
-    // Listen for errors
-    const unsubscribeMessageError = window.electron.chat.onMessageError((error: string, eventPaneId?: string) => {
-      if (eventPaneId && eventPaneId !== stablePaneId) return;
-      isStreamingRef.current = false;
-      setIsThinking(false);
+    const unsubscribeMessageStopped = window.electron.chat.onMessageStopped(
+      (eventPaneId?: string) => {
+        if (eventPaneId && eventPaneId !== stablePaneId) return;
+        isStreamingRef.current = false;
+        setIsLoading(false);
+        setIsThinking(false);
 
-      // Append all accumulated debug messages when error occurs
-      if (debugMessagesRef.current.length > 0) {
-        const accumulatedDebug = debugMessagesRef.current.join('\n');
+        // Get accumulated debug messages
+        const accumulatedDebug =
+          debugMessagesRef.current.length > 0 ? debugMessagesRef.current.join('\n') : null;
         debugMessagesRef.current = []; // Clear accumulator
 
         setMessages((prev) => {
           const lastMessage = prev[prev.length - 1];
-          const debugContent = `\n\n---\n**🔍 Debug Output:**\n\`\`\`\n${accumulatedDebug}\n\`\`\`\n`;
+          if (
+            lastMessage &&
+            lastMessage.role === 'assistant' &&
+            typeof lastMessage.content !== 'string'
+          ) {
+            let hasUpdates = false;
+            let updatedContent = lastMessage.content.map((block) => {
+              if (block.type === 'thinking' && !block.isComplete) {
+                hasUpdates = true;
+                return {
+                  ...block,
+                  isComplete: true,
+                  thinkingDurationMs:
+                    block.thinkingStartedAt ? Date.now() - block.thinkingStartedAt : undefined
+                };
+              }
+              return block;
+            });
 
-          if (lastMessage && lastMessage.role === 'assistant') {
-            const content = lastMessage.content;
-            if (typeof content === 'string') {
-              return [
-                ...prev.slice(0, -1),
+            // Append debug messages if any were accumulated
+            if (accumulatedDebug) {
+              const debugContent = `\n\n---\n**🔍 Debug Output:**\n\`\`\`\n${accumulatedDebug}\n\`\`\`\n`;
+              updatedContent = [
+                ...updatedContent,
                 {
-                  ...lastMessage,
-                  content: content + debugContent
+                  type: 'text' as const,
+                  text: debugContent
                 }
               ];
-            } else {
+              hasUpdates = true;
+            }
+
+            if (hasUpdates) {
               return [
                 ...prev.slice(0, -1),
                 {
                   ...lastMessage,
-                  content: [
-                    ...content,
-                    {
-                      type: 'text' as const,
-                      text: debugContent
-                    }
-                  ]
+                  content: updatedContent
                 }
               ];
             }
+          } else if (accumulatedDebug) {
+            // No existing assistant message but we have debug messages
+            const debugContent = `\n\n---\n**🔍 Debug Output:**\n\`\`\`\n${accumulatedDebug}\n\`\`\`\n`;
+            return [
+              ...prev,
+              {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: debugContent.trim(),
+                timestamp: new Date()
+              }
+            ];
           }
           return prev;
         });
       }
+    );
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: `Error: ${error}`,
-          timestamp: new Date()
+    // Listen for errors
+    const unsubscribeMessageError = window.electron.chat.onMessageError(
+      (error: string, eventPaneId?: string) => {
+        if (eventPaneId && eventPaneId !== stablePaneId) return;
+        isStreamingRef.current = false;
+        setIsThinking(false);
+
+        // Append all accumulated debug messages when error occurs
+        if (debugMessagesRef.current.length > 0) {
+          const accumulatedDebug = debugMessagesRef.current.join('\n');
+          debugMessagesRef.current = []; // Clear accumulator
+
+          setMessages((prev) => {
+            const lastMessage = prev[prev.length - 1];
+            const debugContent = `\n\n---\n**🔍 Debug Output:**\n\`\`\`\n${accumulatedDebug}\n\`\`\`\n`;
+
+            if (lastMessage && lastMessage.role === 'assistant') {
+              const content = lastMessage.content;
+              if (typeof content === 'string') {
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...lastMessage,
+                    content: content + debugContent
+                  }
+                ];
+              } else {
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...lastMessage,
+                    content: [
+                      ...content,
+                      {
+                        type: 'text' as const,
+                        text: debugContent
+                      }
+                    ]
+                  }
+                ];
+              }
+            }
+            return prev;
+          });
         }
-      ]);
-      setIsLoading(false);
-    });
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: `Error: ${error}`,
+            timestamp: new Date()
+          }
+        ]);
+        setIsLoading(false);
+      }
+    );
 
     // Listen for debug messages (stderr from Claude Code process)
     // Accumulate debug messages during streaming - they'll be appended when response completes
-    const unsubscribeDebugMessage = window.electron.chat.onDebugMessage((message: string, eventPaneId?: string) => {
-      if (eventPaneId && eventPaneId !== stablePaneId) return;
-      // Only accumulate if we're actively streaming
-      if (isStreamingRef.current) {
-        debugMessagesRef.current.push(message);
+    const unsubscribeDebugMessage = window.electron.chat.onDebugMessage(
+      (message: string, eventPaneId?: string) => {
+        if (eventPaneId && eventPaneId !== stablePaneId) return;
+        // Only accumulate if we're actively streaming
+        if (isStreamingRef.current) {
+          debugMessagesRef.current.push(message);
+        }
       }
-    });
+    );
 
     // Cleanup function to remove all event listeners
     return () => {

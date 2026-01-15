@@ -1,4 +1,4 @@
-# Claudesky API Test Report
+# ObsidianX Agent API Test Report
 
 ## Date: 2025-12-18
 
@@ -12,7 +12,7 @@
 
 - **Status**: ✓ VALID
 - **Type**: OAuth
-- **Location**: `~/Library/Application Support/claudesky/config.json`
+- **Location**: `~/Library/Application Support/ObsidianX Agent/config.json`
 - **Access Token**: Stored and valid
 - **Refresh Token**: Stored and valid
 - **Expiration**: 2025-12-19 05:13:54 UTC (approximately 7.84 hours from test time)
@@ -128,11 +128,11 @@ Location: node_modules/@anthropic-ai/claude-agent-sdk/cli.js
 
 ---
 
-## 5. How API Calls Work in Claudesky
+## 5. How API Calls Work in ObsidianX Agent
 
 ```
 ┌─────────────────────────────────────────┐
-│   Claudesky Electron App                │
+│   ObsidianX Agent Electron App          │
 │  (src/main/lib/claude-session.ts)      │
 └─────────────────────────────────────────┘
                  ↓
@@ -193,7 +193,7 @@ Location: node_modules/@anthropic-ai/claude-agent-sdk/cli.js
 
 ### Configuration
 
-- `~/Library/Application Support/claudesky/config.json` - Token storage
+- `~/Library/Application Support/ObsidianX Agent/config.json` - Token storage
 
 ### Key Functions
 
@@ -232,7 +232,7 @@ To fully test the API in the actual Electron app:
 
 ## 9. Conclusion
 
-✓ **The Claude API is correctly integrated and configured in Claudesky**
+✓ **The Claude API is correctly integrated and configured in ObsidianX Agent**
 
 - OAuth tokens are valid and stored properly
 - Authentication flow follows correct patterns

@@ -62,7 +62,10 @@ function Settings({ onBack }: SettingsProps) {
     fullPath: string;
   } | null>(null);
   const [isLoadingPathInfo, setIsLoadingPathInfo] = useState(false);
-  const [envVars, setEnvVars] = useState<Array<{ key: string; value: string }> | null>(null);
+  const [envVars, setEnvVars] = useState<Array<{
+    key: string;
+    value: string;
+  }> | null>(null);
   const [isLoadingEnvVars, setIsLoadingEnvVars] = useState(false);
   const [diagnosticMetadata, setDiagnosticMetadata] = useState<{
     appVersion: string;

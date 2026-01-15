@@ -74,7 +74,10 @@ export function calculatePopoverPosition(
   const estimatedLeft = textareaRect.left + parseInt(style.paddingLeft) + metrics.width;
   const estimatedTop = textareaRect.bottom + 8;
 
-  return { top: estimatedTop, left: Math.max(textareaRect.left, estimatedLeft) };
+  return {
+    top: estimatedTop,
+    left: Math.max(textareaRect.left, estimatedLeft)
+  };
 }
 
 /**

@@ -8,7 +8,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load config
-const configPath = path.join(process.env.HOME, 'Library/Application Support/claudesky/config.json');
+const configPath =
+  [
+    path.join(process.env.HOME, 'Library/Application Support/ObsidianX Agent/config.json'),
+    path.join(process.env.HOME, 'Library/Application Support/ObsidianX/config.json'),
+    path.join(process.env.HOME, 'Library/Application Support/claudesky/config.json')
+  ].find((p) => fs.existsSync(p)) ||
+  path.join(process.env.HOME, 'Library/Application Support/ObsidianX Agent/config.json');
 console.log('Loading config from:', configPath);
 
 let config;
@@ -47,9 +53,8 @@ if (!isExpired) {
 // Test using Claude Agent SDK CLI
 console.log('[TEST] Testing Claude Agent SDK CLI with OAuth token...\n');
 
-const prompt = 'Say "Hello from Claudesky API test" in one sentence.';
-const cliPath =
-  '/Users/jkneen/Documents/GitHub/flows/claudesky/node_modules/@anthropic-ai/claude-agent-sdk/cli.js';
+const prompt = 'Say "Hello from ObsidianX Agent API test" in one sentence.';
+const cliPath = path.resolve(__dirname, 'node_modules/@anthropic-ai/claude-agent-sdk/cli.js');
 
 if (!fs.existsSync(cliPath)) {
   console.error(`[ERROR] CLI not found at: ${cliPath}`);

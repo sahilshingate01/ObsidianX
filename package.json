@@ -1,8 +1,9 @@
 {
-  "name": "claudesky",
+  "name": "obsidianx-agent",
   "description": "Open-source desktop client for Claude Agent SDK",
   "type": "module",
   "version": "1.0.0",
+  "author": "Sahil Shingate",
   "license": "MIT",
   "main": "out/main/index.js",
   "packageManager": "bun@1.3.2",
@@ -91,8 +92,8 @@
     "vite": "^7.1.12"
   },
   "build": {
-    "appId": "com.jasonkneen.claudesky",
-    "productName": "Claudesky",
+    "appId": "com.sahilshingate.obsidianx-agent",
+    "productName": "ObsidianX Agent",
     "icon": "static/icon.png",
     "beforeBuild": "scripts/beforeBuild.js",
     "afterPack": "scripts/afterPack.js",
@@ -111,8 +112,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "jasonkneen",
-        "repo": "claudesky",
+        "owner": "sahilshingate01",
+        "repo": "ObsidianX",
         "releaseType": "release"
       }
     ],
@@ -131,10 +132,10 @@
       "entitlements": "resources/entitlements.mac.plist",
       "entitlementsInherit": "resources/entitlements.mac.inherit.plist",
       "extendInfo": {
-        "NSDesktopFolderUsageDescription": "Claude Agent Desktop needs access to your Desktop folder to create and manage workspace files.",
-        "NSDocumentsFolderUsageDescription": "Claude Agent Desktop needs access to your Documents folder to read and write files.",
-        "NSDownloadsFolderUsageDescription": "Claude Agent Desktop needs access to your Downloads folder to read and write files.",
-        "NSMicrophoneUsageDescription": "Claude Agent Desktop needs access to your microphone for voice-to-text features."
+        "NSDesktopFolderUsageDescription": "ObsidianX Agent needs access to your Desktop folder to create and manage workspace files.",
+        "NSDocumentsFolderUsageDescription": "ObsidianX Agent needs access to your Documents folder to read and write files.",
+        "NSDownloadsFolderUsageDescription": "ObsidianX Agent needs access to your Downloads folder to read and write files.",
+        "NSMicrophoneUsageDescription": "ObsidianX Agent needs access to your microphone for voice-to-text features."
       },
       "extraResources": [
         {

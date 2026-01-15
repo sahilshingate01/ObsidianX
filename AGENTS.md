@@ -1,4 +1,4 @@
-# Claude Agent Desktop
+# ObsidianX Agent
 
 Electron desktop application for agentic chat with the Claude Agent SDK.
 

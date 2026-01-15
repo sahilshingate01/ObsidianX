@@ -43,9 +43,7 @@ export default function SplitDivider({ direction, onResize }: SplitDividerProps)
       const rect = container.getBoundingClientRect();
 
       const newRatio =
-        isVertical ?
-          (e.clientX - rect.left) / rect.width
-        : (e.clientY - rect.top) / rect.height;
+        isVertical ? (e.clientX - rect.left) / rect.width : (e.clientY - rect.top) / rect.height;
 
       // Clamp to 10%-90% to prevent invisible panes
       const clampedRatio = Math.max(0.1, Math.min(0.9, newRatio));
@@ -67,7 +65,9 @@ export default function SplitDivider({ direction, onResize }: SplitDividerProps)
     document.body.style.cursor = isVertical ? 'col-resize' : 'row-resize';
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove, { capture: true });
+      window.removeEventListener('mousemove', handleMouseMove, {
+        capture: true
+      });
       window.removeEventListener('mouseup', handleMouseUp, { capture: true });
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
@@ -78,16 +78,11 @@ export default function SplitDivider({ direction, onResize }: SplitDividerProps)
     <div
       ref={dividerRef}
       onMouseDown={handleMouseDown}
-      className={`
-        ${isVertical ? 'w-[8px] h-full cursor-col-resize' : 'h-[8px] w-full cursor-row-resize'}
-        ${
-          isDragging ?
-            'bg-blue-500'
-          : 'bg-neutral-300 hover:bg-blue-400 dark:bg-neutral-700 dark:hover:bg-blue-500'
-        }
-        transition-colors
-        flex-shrink-0
-      `}
+      className={` ${isVertical ? 'h-full w-[8px] cursor-col-resize' : 'h-[8px] w-full cursor-row-resize'} ${
+        isDragging ? 'bg-blue-500' : (
+          'bg-neutral-300 hover:bg-blue-400 dark:bg-neutral-700 dark:hover:bg-blue-500'
+        )
+      } flex-shrink-0 transition-colors`}
     />
   );
 }

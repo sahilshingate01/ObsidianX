@@ -55,7 +55,7 @@ export default function UpdateReadyBanner() {
               Update ready: {status.updateInfo?.version}
             </p>
             <p className="text-xs text-green-700 dark:text-green-300">
-              Restart Claudesky to finish installing.
+              Restart ObsidianX Agent to finish installing.
             </p>
           </div>
         </div>

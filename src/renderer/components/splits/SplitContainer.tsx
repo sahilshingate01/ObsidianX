@@ -8,7 +8,6 @@ import type { ReactNode } from 'react';
 
 import type { SplitDirection } from '../../../shared/types/splits';
 import { useSplitContext } from '../../contexts/SplitContext';
-
 import SplitDivider from './SplitDivider';
 
 interface SplitContainerProps {

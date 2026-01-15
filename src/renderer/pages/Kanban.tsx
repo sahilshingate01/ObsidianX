@@ -180,7 +180,10 @@ export default function Kanban({ onOpenSettings }: KanbanProps) {
                     <textarea
                       value={newCardText[column.id] || ''}
                       onChange={(e) =>
-                        setNewCardText({ ...newCardText, [column.id]: e.target.value })
+                        setNewCardText({
+                          ...newCardText,
+                          [column.id]: e.target.value
+                        })
                       }
                       onKeyDown={(e) => handleKeyDown(e, column.id)}
                       placeholder="Enter card text..."

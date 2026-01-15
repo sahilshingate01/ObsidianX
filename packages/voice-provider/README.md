@@ -1,6 +1,6 @@
 # @voice-provider/core
 
-Complete voice input/output system for Claude Agent Desktop using Gemini Live API.
+Complete voice input/output system for ObsidianX Agent using Gemini Live API.
 
 ## Features
 
@@ -190,6 +190,10 @@ Voice state includes:
 - `error`: Latest error message
 
 Update listeners automatically track state changes.
+
+## Author
+
+**Sahil Shingate**
 
 ## License
 

@@ -51,7 +51,7 @@ export interface OAuthClientOptions {
 
   /**
    * Client ID for OAuth authentication
-   * Defaults to Claude Agent Desktop client ID
+   * Defaults to ObsidianX Agent client ID
    */
   clientId?: string;
 

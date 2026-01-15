@@ -8,10 +8,9 @@
 import { useEffect, useState } from 'react';
 
 import type { SplitNode } from '../../../shared/types/splits';
-import TitleBar from '../TitleBar';
-import { useSplitContext } from '../../contexts/SplitContext';
 import { findFirstLeafId } from '../../../shared/utils/split-utils';
-
+import { useSplitContext } from '../../contexts/SplitContext';
+import TitleBar from '../TitleBar';
 import PaneRenderer from './PaneRenderer';
 import SplitContainer from './SplitContainer';
 
@@ -58,7 +57,7 @@ export default function SplitLayout() {
   }, [tree, splitPane, closePane, activePane]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col">
+    <div className="flex h-screen w-screen flex-col overflow-hidden">
       <TitleBar onOpenSettings={() => setOpenSettings(!openSettings)} projectName={projectName} />
       <div className="flex-1 overflow-hidden pt-[48px]">
         <SplitNode node={tree.root} />

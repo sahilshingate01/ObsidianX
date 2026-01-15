@@ -196,7 +196,10 @@ class WorkerManager extends EventEmitter {
             workerInfo.progress = progress.text;
             if (progress.streamDelta) {
               workerInfo.streamContent = (workerInfo.streamContent || '') + progress.streamDelta;
-              this.emit('stream', { workerId: taskId, delta: progress.streamDelta });
+              this.emit('stream', {
+                workerId: taskId,
+                delta: progress.streamDelta
+              });
             }
             this.emitUpdate();
             return;

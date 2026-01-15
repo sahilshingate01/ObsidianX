@@ -103,7 +103,7 @@ export async function discoverMcpServerTools(
   try {
     const transport = createTransport(config);
     const client = new Client({
-      name: 'claudesky',
+      name: 'obsidianx-agent',
       version: app.getVersion()
     });
 

@@ -210,7 +210,10 @@ async function saveConversation(name: string): Promise<void> {
 
   try {
     const history: ConversationHistory = {
-      messages: conversationHistory as Array<{ role: 'user' | 'assistant'; content: string }>,
+      messages: conversationHistory as Array<{
+        role: 'user' | 'assistant';
+        content: string;
+      }>,
       timestamp: new Date().toISOString(),
       model: 'smart-sonnet'
     };

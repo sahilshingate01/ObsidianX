@@ -75,7 +75,7 @@ function createWindow() {
 
   // macOS-specific: enable native tabs (default title bar)
   if (process.platform === 'darwin') {
-    windowOptions.tabbingIdentifier = 'Claudesky';
+    windowOptions.tabbingIdentifier = 'ObsidianX Agent';
   }
 
   mainWindow = new BrowserWindow(windowOptions);
@@ -158,11 +158,14 @@ function createWindow() {
   });
 }
 
-// Tab types supported by Claudesky
+// Tab types supported by ObsidianX Agent
 type TabType = 'project' | 'todos' | 'kanban' | 'notes' | 'picker' | 'browser';
 
 // Create a new window/tab with specified type
 function createTabWindow(type: TabType, projectPath?: string): BrowserWindow {
+  console.log(`[createTabWindow] ===== CREATING TAB WINDOW =====`);
+  console.log(`[createTabWindow] type: "${type}"`);
+  console.log(`[createTabWindow] projectPath: "${projectPath}"`);
   const isDev = process.env.ELECTRON_RENDERER_URL !== undefined;
   const preloadPath = join(__dirname, '../preload/index.cjs');
   const iconPath = join(__dirname, '../../static/icon.png');
@@ -186,7 +189,7 @@ function createTabWindow(type: TabType, projectPath?: string): BrowserWindow {
 
   // macOS-specific: enable native tabs (default title bar)
   if (process.platform === 'darwin') {
-    windowOptions.tabbingIdentifier = 'Claudesky';
+    windowOptions.tabbingIdentifier = 'ObsidianX Agent';
   }
 
   const win = new BrowserWindow(windowOptions);
@@ -218,14 +221,14 @@ function createProjectWindow(projectPath: string): BrowserWindow {
 
 app.whenReady().then(async () => {
   // Set app name
-  app.name = 'Claudesky';
+  app.name = 'ObsidianX Agent';
 
   // Set About panel options
   app.setAboutPanelOptions({
-    copyright: 'Copyright © 2025 Claudesky'
+    copyright: 'Copyright © 2026 Sahil Shingate'
   });
 
-  // Default to dark theme for native title bar (most Claudesky themes are dark)
+  // Default to dark theme for native title bar (most ObsidianX Agent themes are dark)
   // This will be overridden when renderer syncs the actual theme
   nativeTheme.themeSource = 'dark';
   console.log('[Electron] Set initial native theme to dark');
@@ -250,10 +253,12 @@ app.whenReady().then(async () => {
 
   // IPC handler to open a project in a new native tab
   ipcMain.handle('project:open', async (event, projectPath: string) => {
+    console.log(`[project:open] ========== OPENING PROJECT ==========`);
+    console.log(`[project:open] Received projectPath: "${projectPath}"`);
     const sourceWindow = BrowserWindow.fromWebContents(event.sender);
     const projectWindow = createProjectWindow(projectPath);
 
-    console.log(`[project:open] Opening project: ${projectPath}`);
+    console.log(`[project:open] Created window, projectPath was: "${projectPath}"`);
 
     // Extract project name from path (last directory component)
     const projectName = projectPath.split(/[\\/]/).filter(Boolean).pop() || projectPath;

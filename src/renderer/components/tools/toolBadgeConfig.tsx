@@ -270,7 +270,10 @@ export function getToolLabel(tool: ToolUseSimple): string {
       return tool.name;
     }
     case 'Bash': {
-      const input = tool.parsedInput as { command?: string; description?: string };
+      const input = tool.parsedInput as {
+        command?: string;
+        description?: string;
+      };
       if (input.description) return input.description;
       if (input.command) {
         const cmd = input.command.split(' ')[0];

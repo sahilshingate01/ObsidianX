@@ -134,7 +134,7 @@ new AnthropicOAuthClient(options?: OAuthClientOptions)
 **Options:**
 
 - `openUrl?: (url: string) => void | Promise<void>` - Optional callback to open URLs
-- `clientId?: string` - Custom OAuth client ID (defaults to Claude Agent Desktop)
+- `clientId?: string` - Custom OAuth client ID (defaults to ObsidianX Agent)
 
 #### Methods
 
